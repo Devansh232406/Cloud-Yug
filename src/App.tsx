@@ -30,7 +30,8 @@ import {
   Brain,
   TrendingUp,
   TrendingDown,
-  Info
+  Info,
+  ExternalLink
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -898,6 +899,20 @@ export default function App() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Check if we're in extension popup context (small width)
+  const isExtensionPopup = typeof window !== 'undefined' && window.innerWidth <= 500;
+  
+  // Function to open full dashboard
+  const openFullDashboard = () => {
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL) {
+      // Extension context - open options page
+      chrome.tabs.create({ url: chrome.runtime.getURL('options.html') });
+    } else {
+      // Web context - open in new window
+      window.open(window.location.href, '_blank', 'width=1200,height=800');
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -982,6 +997,16 @@ export default function App() {
             </nav>
           </div>
           <div className="flex items-center gap-4">
+            {isExtensionPopup && (
+              <button 
+                onClick={openFullDashboard}
+                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition-all hover:shadow-sm"
+                title="Open full dashboard in new tab"
+              >
+                <ExternalLink size={14} />
+                Full View
+              </button>
+            )}
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-blue-600/10 rounded-full border border-blue-600/20">
               <span className="flex h-2 w-2 rounded-full bg-blue-600 animate-pulse"></span>
               <span className="text-xs font-bold text-blue-600 tracking-wide uppercase">Score: {stats?.focus_score}</span>
